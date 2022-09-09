@@ -28,7 +28,7 @@ function Create-File {
 }
 
 # Writes the fileheader into the specific file
-# $path = The path of the file in which the header shall be written
+# $path     = The path of the file in which the header shall be written
 # $headline = The headline of the Header
 function Create-FileHeader {
     param($path, $headline)
@@ -46,11 +46,14 @@ function Create-FileHeader {
 # $text = the text which shall be written
 function Format-Output {
     param($path, $text)
-   # Add-Content -Path $path -value " " # Newline Workaround
     $text >> $path
 }
 
 # Creates the final document for a system information topic
+# $dir      = The path for the folder to be created
+# $path     = The full path with the file name
+# $headline = The headline within the created file
+# $result   = The content which is written to the file
 function Create-Document{
     param($dir, $path, $headline, $result)
 
