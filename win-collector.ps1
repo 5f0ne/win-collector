@@ -39,6 +39,8 @@ function Create-FileHeader {
     "# Topic: " + $headline                                                           >> $path
     "# "                                                                              >> $path
     "###############################################################################" >> $path
+    "" >> $path
+    "" >> $path
 }
 
 # Writes a result into a file
@@ -75,16 +77,22 @@ $machineName = $env:computername
 $basicInfo = $machineName + "." + $dateTime
 $dir = ".\" + $basicInfo
 
+# 2. Get current date
 
-# 2. Get current processes with the user who started the process
+$headline = "Date"
+$path = $dir + "\" + $basicInfo + "_" + $headline + ".txt"
+
+$result = Get-Date -Format "dd.MM.yyyy HH:mm:ss Uhr"
+
+Create-Document -dir $dir -path $path -headline $headline -result $result
+
+
+# 2. Get current processes with loaded dlls
 
 $headline = "ProcessInformation"
 $path = $dir + "\" + $basicInfo + "_" + $headline + ".txt"
 
-$result += get-process -IncludeUserName
-$result += tasklist
-$result += tasklist /m
-$result += tasklist /svc
+$result =  tasklist /m
 
 Create-Document -dir $dir -path $path -headline $headline -result $result
 
@@ -150,7 +158,7 @@ Create-Document -dir $dir -path $path -headline $headline -result $result
 $headline = "LocalUsers"
 $path = $dir + "\" + $basicInfo + "_" + $headline + ".txt"
 
-$result = get-localuser | select *
+$result = get-localuser | Select-Object *
 
 Create-Document -dir $dir -path $path -headline $headline -result $result
 
