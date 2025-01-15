@@ -4,10 +4,10 @@
 #
 # Version: 1.0.0
 #
-# Usage: .\win-collector-ng.ps1 -Output output-dir
+# Usage: .\win-collector-ng.ps1 -Output output-dir -ErrorActionPreference
 # 
 
-param($Output = ".\win-collector-ng")
+param($Output = ".\win-collector-ng", $ErrorActionPreference="SilentlyContinue")
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -40,21 +40,25 @@ function Get-FilePath {
 
 # ----------------------------------------------------------------------------------------------------------
 
-# Create Directories
+# Variables
 
-$dateTime = Get-Date -Format "dd-MM-yyyy_HH-mm-ss"
+$startDateTime = Get-Date -Format "dd-MM-yyyy_HH-mm-ss"
+$startDateTimeEx = $(Get-Date)
 $machineName = $env:computername
-$basicInfo = $machineName + "." + $dateTime
+$basicInfo = $machineName + "." + $startDateTime
 
 $currentPath = $Output + "\" + $basicInfo
 
 $currentPathPsDir = $currentPath + "\ps"
 $currentPathCmdDir = $currentPath + "\cmd"
 
+# ----------------------------------------------------------------------------------------------------------
+
+# Create Directories
+
 New-OutputFolder -OutputPath $currentPath
 New-OutputFolder -OutputPath $currentPathPsDir
 New-OutputFolder -OutputPath $currentPathCmdDir
-
 
 # ----------------------------------------------------------------------------------------------------------
 
@@ -63,12 +67,10 @@ New-OutputFolder -OutputPath $currentPathCmdDir
 # ----------------------------------------------------------------------------------------------------------
 
 # Processes 
-
 $p = Get-FilePath -Path $currentPathPsDir -FileName "processes.csv"
 Get-CimInstance -Class Win32_Process | Select-Object ProcessName, CreationDate, CSName, ProcessId, ParentProcessId, CommandLine | Export-Csv $p -NoTypeInformation
 
 # Processes with usernames
-
 $p = Get-FilePath -Path $currentPathPsDir -FileName "processes-with-usernames.txt"
 Get-Process -IncludeUserName | Format-Table -AutoSize | Out-File $p
 
@@ -79,7 +81,6 @@ Get-Process -FileVersionInfo | Select-Object FileName, FileVersion, CompanyName 
 # ----------------------------------------------------------------------------------------------------------
 
 # Network Usage
-
 $p = Get-FilePath -Path $currentPathPsDir -FileName "tcp.csv"
 Get-NetTCPConnection | Select-Object State, CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, OwningProcess | Export-Csv $p -NoTypeInformation
 
@@ -104,18 +105,15 @@ Get-NetAdapter | Select-Object * | Export-Csv $p -NoTypeInformation
 $p = Get-FilePath -Path $currentPathPsDir -FileName "net-adapter-table.txt"
 Get-NetAdapter | Format-Table -AutoSize | Out-File $p
 
-
 # ----------------------------------------------------------------------------------------------------------
 
 # Services
-
 $p = Get-FilePath -Path $currentPathPsDir -FileName "services.csv"
 Get-CimInstance -Class Win32_Service | Select-Object Started, State, ProcessId, Name, StartName, Status, PathName, StartMode, ExitCode, Caption, Description | Export-Csv $p -NoTypeInformation
 
 # ----------------------------------------------------------------------------------------------------------
 
 # Local Users
-
 $p = Get-FilePath -Path $currentPathPsDir -FileName "local-users.csv"
 Get-LocalUser | Select-Object Enabled, SID, PrincipalSource, FullName, UserMayChangePassword, PasswordRequired, Name,  LastLogon, PasswordChageableDate, PasswordExpires, PasswordLastSet, Description | Export-Csv $p -NoTypeInformation
 
@@ -147,7 +145,6 @@ Get-LocalGroup | Select-Object Name | ForEach-Object {
     $groupMembersList += $obj 
 }
 
-
 $p = Get-FilePath -Path $currentPathPsDir -FileName "local-group-members.csv"
 $groupMembersList | Select-Object GroupName, Members  | Export-Csv $p -NoTypeInformation
 
@@ -155,16 +152,13 @@ $groupMembersList | Select-Object GroupName, Members  | Export-Csv $p -NoTypeInf
 # ----------------------------------------------------------------------------------------------------------
 
 # Scheduled Tasks
-
 $p = Get-FilePath -Path $currentPathPsDir -FileName "scheduled-tasks.csv"
 Get-ScheduledTask | Select-Object State, Author, Date, TaskName, TaskPath, URI, Description | Export-Csv $p -NoTypeInformation
-
 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "scheduled-tasks-info.csv"
 Get-ScheduledTask | Get-ScheduledTaskInfo | Select-Object TaskName, TaskPath, LastTaskResult, LastRunTime, NextRunTime | Export-Csv $p -NoTypeInformation
 
 # Create ScheduledTask exports
-
 $stp = $currentPathPsDir + "\scheduled-tasks-export"
 New-OutputFolder -OutputPath $stp
 
@@ -185,26 +179,49 @@ foreach ($task in $tasks){
 # ----------------------------------------------------------------------------------------------------------
 
 # Get firewall profiles and rules
-
-
 $p = Get-FilePath -Path $currentPathPsDir -FileName "firewall-profiles.csv"
 Get-NetFirewallProfile | Select-Object * | Export-Csv $p -NoTypeInformation
 
-
 $p = Get-FilePath -Path $currentPathPsDir -FileName "firewall-rules.csv"
-Get-NetFirewallRule -All | Select-Object Enabled, Direction, Action, Name, Id, DisplayName, Group, Profile, RuleGroup, StatusCode, Description  | Export-Csv $p -NoTypeInformation
+Get-NetFirewallRule -All | Select-Object Enabled, Direction, Action, Name, Id, DisplayName, Group, Profile, RuleGroup, StatusCode, Description | Export-Csv $p -NoTypeInformation
 
 # ----------------------------------------------------------------------------------------------------------
 
-# Network Shares
-$p = Get-FilePath -Path $currentPathPsDir -FileName "network-shares.csv"
-Get-WmiObject -query "SELECT * FROM Win32_Share"  | Select-Object Name, Path, Description  | Export-Csv $p -NoTypeInformation
+# Out SMB Mappings
+$p = Get-FilePath -Path $currentPathPsDir -FileName "smb-mappings.csv"
+Get-SmbMapping | Select-Object LocalPath, Status, RemotePath | Export-Csv $p -NoTypeInformation
+
+# SMB Sessions
+$p = Get-FilePath -Path $currentPathPsDir -FileName "smb-sessions.csv"
+Get-SmbSession -ErrorAction SilentlyContinue | Select-Object * | Export-Csv $p -NoTypeInformation
+
+# SMB Shares
+$p = Get-FilePath -Path $currentPathPsDir -FileName "smb-shares.csv"
+Get-SmbShare | Select-Object ShareState, ShareType, CurrentUsers, Name, Path, Description, ScopeName | Export-Csv $p -NoTypeInformation
+
+# SMB Share AcLs
+$ssa = $currentPathPsDir + "\smb-share-acl"
+New-OutputFolder -OutputPath $ssa
+
+$shares = Get-SmbShare 
+
+foreach ($share in $shares){
+ 
+    $result = Get-SmbShareAccess -Name $share.Name
+
+    if($null -ne $result){
+        # to have consistent file names, tasknames with spaces are replaced with underscores.
+        $taskName = $share.Name.Replace(" ","_")
+        $p = Get-FilePath -Path $ssa -FileName ($taskName + ".csv")
+        $result | Select-Object AccessCOntrolType, AccessRight, AccountName, Name, ScopeName | Export-Csv $p -NoTypeInformation
+    }
+}
 
 # ----------------------------------------------------------------------------------------------------------
 
 # Installed Programms
 $p = Get-FilePath -Path $currentPathPsDir -FileName "installed-programms.csv"
-Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*  |  Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Export-Csv $p -NoTypeInformation
+Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Export-Csv $p -NoTypeInformation
 
 # ----------------------------------------------------------------------------------------------------------
 
@@ -212,6 +229,26 @@ Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*  | 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "hotfixes.csv"
 Get-HotFix | Select-Object CSName, Description, HotFixID, InstalledBy, InstalledOn | Export-Csv $p -NoTypeInformation
 
+# ----------------------------------------------------------------------------------------------------------
+
+# Files in current users home directory
+$p = Get-FilePath -Path $currentPathPsDir -FileName "files-in-homedir.csv"
+Get-ChildItem -Path $env:USERPROFILE -Recurse -Force| Select-Object -Property Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | Export-Csv $p -NoTypeInformation
+
+
+# ----------------------------------------------------------------------------------------------------------
+
+# Registry: Run Keys
+$p = Get-FilePath -Path $currentPathPsDir -FileName "reg-run-keys.txt"
+
+$hklmRun = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Run
+$hklmRun | Out-File -Append -FilePath $p
+$hklmRunOnce = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce
+$hklmRunOnce | Out-File -Append -FilePath $p
+$hkcuRun = Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Run
+$hkcuRun | Out-File -Append -FilePath $p
+$hkcuRunOnce = Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce
+$hkcuRunOnce | Out-File -Append -FilePath $p
 
 # ----------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------
@@ -229,7 +266,6 @@ $result | Out-File -FilePath $p
 # ----------------------------------------------------------------------------------------------------------
 
 # network usage - netstat / arp / ipconfig / route / dns
-
 $p = Get-FilePath -Path $currentPathCmdDir -FileName "netstat.txt"
 $result = netstat -nao 
 $result += " "
@@ -256,7 +292,6 @@ $result | Out-File -FilePath $p
 # ----------------------------------------------------------------------------------------------------------
 
 # System Variables
-
 $p = Get-FilePath -Path $currentPathCmdDir -FileName "system-variables.txt"
 $result = cmd.exe /c set 
 $result | Out-File -FilePath $p
@@ -264,16 +299,20 @@ $result | Out-File -FilePath $p
 # ----------------------------------------------------------------------------------------------------------
 
 # System Info
-
 $p = Get-FilePath -Path $currentPathCmdDir -FileName "system-info.txt"
 $result = systeminfo
 $result | Out-File -FilePath $p
 
+# ----------------------------------------------------------------------------------------------------------
+
+# Save error array
+$p = Get-FilePath -Path $currentPath -FileName "errors.txt"
+$error | Out-File -FilePath $p
 
 # ----------------------------------------------------------------------------------------------------------
 
-# Hash all the files
 
+# Hash all the files
 $files = Get-ChildItem -Recurse $currentPath
 
 $hash_array = @()
@@ -290,3 +329,19 @@ foreach ($f in $files){
 
 $p = Get-FilePath -Path $currentPath -FileName "hashes.csv"
 $hash_array | Select-Object FullName, MD5, SHA256 | Export-Csv $p -NoTypeInformation
+
+# ----------------------------------------------------------------------------------------------------------
+
+# Write Execution Time
+$endDateTime = Get-Date -Format "dd-MM-yyyy_HH-mm-ss"
+$elapsedTime = $(Get-Date) - $startDateTimeEx
+
+$p = Get-FilePath -Path $currentPath -FileName "execution-time.txt"
+
+$obj = New-Object -TypeName PSObject -Property @{
+    "Duration" = $elapsedTime
+    "End" = $endDateTime
+    "Start" = $startDateTime
+}
+
+$obj | Format-List | Out-File -FilePath $p

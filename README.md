@@ -18,17 +18,8 @@ Collects basic system information on a Windows host with Powershell enabled and 
   - ipconfig /all
   - route print
   - ipconfig /displaydns
-- **Firewall**
-  - Get-NetFirewallProfile
-  - Get-NetFirewallRule
 - **Services**
   - Get-CimInstance
-- **ScheduledTasks**
-  - Get-ScheduledTask
-  - Get-ScheduledTaskInfo
-  - Export-ScheduledTask
-- **System Variables**
-  - cmd.exe /c set
 - **Local Users**
   - Get-LocalUser
 - **Local Groups**
@@ -36,14 +27,30 @@ Collects basic system information on a Windows host with Powershell enabled and 
 - **Members per Group**
   - Get-LocalGroup
   - Get-LocalGroupMember
-- **Network Shares**
-  - Get-WmiObject
-- **System Information**
-  - systeminfo
+- **ScheduledTasks**
+  - Get-ScheduledTask
+  - Get-ScheduledTaskInfo
+  - Export-ScheduledTask
+- **Firewall**
+  - Get-NetFirewallProfile
+  - Get-NetFirewallRule
+- **SMB**
+  - Get-SmbMapping
+  - Get-SmbSession
+  - Get-SmbShare
+  - Get-SmbShareAccess
 - **Installed Programs**
   - Get-ItemProperty
 - **HotFixes**
   - Get-HotFix
+- **Files in Home Dir**
+  - Get-ChildItem
+- **Registry - Run Keys**
+  - Get-ItemProperty
+- **System Variables**
+  - cmd.exe /c set
+- **System Information**
+  - systeminfo
 
 # Usage
 
@@ -62,7 +69,7 @@ Example:
 Within the folder, all generated system information are available as `csv` files for the powershell commands. For the old
 commands the output is written to a `txt` file.
 
-There is a SHA256 and MD5 hash generated for each file in this folder an saved into a separate file for verification purposes.
+There is a SHA256 and MD5 hash generated for each file in this folder an saved into a separate file for verification purposes. Additionally all errors from the `$error` array and information on the execution time is also saved into a `txt` file.
 
 # License 
 
