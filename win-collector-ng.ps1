@@ -175,6 +175,17 @@ foreach ($task in $tasks){
     }
 }
 
+# ----------------------------------------------------------------------------------------------------------
+
+# WMI Event Filter and Consumer
+$p = Get-FilePath -Path $currentPathPsDir -FileName "wmi-event-filter.csv"
+Get-WMIObject -Namespace root\Subscription -Class __EventFilter | Select-Object Name, EventNamespace, Query, QueryLanguage  | Export-Csv $p -NoTypeInformation
+
+$p = Get-FilePath -Path $currentPathPsDir -FileName "wmi-event-consumer.csv"
+Get-WMIObject -Namespace root\Subscription -Class __EventConsumer | Select-Object Name, SourceName, CommandLineTemplate, ExecutablePath, ScriptFilename, ScriptingEngine, ScriptText | Export-Csv $p -NoTypeInformation
+
+$p = Get-FilePath -Path $currentPathPsDir -FileName "wmi-event-filter-consumer-binding.csv"
+Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding | Select-Object Filter, Consumer | Export-Csv $p -NoTypeInformation
 
 # ----------------------------------------------------------------------------------------------------------
 

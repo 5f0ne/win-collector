@@ -31,6 +31,8 @@ Collects basic system information on a Windows host with Powershell enabled and 
   - Get-ScheduledTask
   - Get-ScheduledTaskInfo
   - Export-ScheduledTask
+- **WMI**
+  - Get-WMIObject
 - **Firewall**
   - Get-NetFirewallProfile
   - Get-NetFirewallRule
