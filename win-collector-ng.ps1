@@ -124,7 +124,7 @@ Get-CimInstance -Class Win32_Service | Select-Object Started, State, ProcessId, 
 
 # Local Users
 $p = Get-FilePath -Path $currentPathPsDir -FileName "local-users.csv"
-Get-LocalUser | Select-Object Enabled, SID, PrincipalSource, FullName, UserMayChangePassword, PasswordRequired, Name,  LastLogon, PasswordChageableDate, PasswordExpires, PasswordLastSet, Description | Export-Csv $p -NoTypeInformation
+Get-LocalUser | Select-Object Enabled, SID, PrincipalSource, FullName, UserMayChangePassword, PasswordRequired, Name, LastLogon, PasswordChageableDate, PasswordExpires, PasswordLastSet, Description | Export-Csv $p -NoTypeInformation
 
 # ----------------------------------------------------------------------------------------------------------
 
@@ -296,6 +296,17 @@ $hkcuRun = Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Run
 $hkcuRun | Out-File -Append -FilePath $p
 $hkcuRunOnce = Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce
 $hkcuRunOnce | Out-File -Append -FilePath $p
+
+# ----------------------------------------------------------------------------------------------------------
+
+# Autostart Folder
+$currentUserAutoStart = $env:APPDATA + "\Microsoft\Windows\Start Menu\Programs\Startup"
+$systemAutoStart = "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp"
+
+$p = Get-FilePath -Path $currentPathPsDir -FileName "autostart-folder-current-user.csv"
+Get-ChildItem -Path $currentUserAutoStart -Recurse -Force | Select-Object Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | Export-Csv $p -NoTypeInformation
+$p = Get-FilePath -Path $currentPathPsDir -FileName "autostart-folder-system.csv"
+Get-ChildItem -Path $systemAutoStart -Recurse -Force | Select-Object Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | Export-Csv $p -NoTypeInformation
 
 # ----------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------
