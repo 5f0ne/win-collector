@@ -7,7 +7,16 @@
 # Usage: .\win-collector-ng.ps1 -Output output-dir -ErrorActionPreference
 # 
 
-param($Output = ".\win-collector-ng", $ErrorActionPreference="SilentlyContinue")
+param($ErrorActionPreference="SilentlyContinue", 
+      # Path to write win collector output
+      $Output=".\win-collector-ng", 
+      # Path for enumeration (ADS)
+      $EnumPath=$env:USERPROFILE,
+      # If true, searches for alternate data streams in all files in $EnumPath
+      $EnumerateADS=$false, 
+      # If true, enumerates all files to provide a list of file paths in $EnumPath
+      $EnumerateFiles=$false
+      )
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -148,7 +157,6 @@ Get-LocalGroup | Select-Object Name | ForEach-Object {
 $p = Get-FilePath -Path $currentPathPsDir -FileName "local-group-members.csv"
 $groupMembersList | Select-Object GroupName, Members  | Export-Csv $p -NoTypeInformation
 
-
 # ----------------------------------------------------------------------------------------------------------
 
 # Scheduled Tasks
@@ -186,6 +194,33 @@ Get-WMIObject -Namespace root\Subscription -Class __EventConsumer | Select-Objec
 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "wmi-event-filter-consumer-binding.csv"
 Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding | Select-Object Filter, Consumer | Export-Csv $p -NoTypeInformation
+
+# ----------------------------------------------------------------------------------------------------------
+
+# Alternate Data Streams (ADS)
+if($EnumerateADS){
+    $p = Get-FilePath -Path $currentPathPsDir -FileName "alternate-data-streams.csv"
+    $ads_content= Get-FilePath -Path $currentPathPsDir -FileName "alternate-data-streams-content.txt"
+    $ads_array = @()
+    # Iterate over path and get all files with an alternate data stream
+    Get-ChildItem -Path $EnumPath -Recurse -Force | Get-Item -Stream * | Where-Object {$_.Stream -ne ':$DATA'} | ForEach-Object {
+        # Extract the content of the alternate data stream and write it to a file as a hexdump
+        $filenameAndStream = "`n`n$($_.FileName):$($_.Stream)" 
+        $filenameAndStream | Out-File -Append -FilePath $ads_content
+        Get-Content -LiteralPath $_.FileName -Stream $_.Stream -Raw | Format-Hex | Out-File -Append -FilePath $ads_content
+        $line = "----------------------------------------------------------------------------------------------------------"
+        $line | Out-File -Append -FilePath $ads_content
+        # Get the filename, stream name and length of the ads
+        $obj = New-Object -TypeName PSObject -Property @{
+            "FileName" = $_.FileName
+            "Stream" = $_.Stream
+            "Length" = $_.Length
+        }
+        $ads_array += $obj
+    }
+    # Save ADS properties into csv file
+    $ads_array | Select-Object Length, FileName, Stream | Export-Csv $p -NoTypeInformation
+}
 
 # ----------------------------------------------------------------------------------------------------------
 
@@ -242,10 +277,11 @@ Get-HotFix | Select-Object CSName, Description, HotFixID, InstalledBy, Installed
 
 # ----------------------------------------------------------------------------------------------------------
 
-# Files in current users home directory
-$p = Get-FilePath -Path $currentPathPsDir -FileName "files-in-homedir.csv"
-Get-ChildItem -Path $env:USERPROFILE -Recurse -Force| Select-Object -Property Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | Export-Csv $p -NoTypeInformation
-
+# File Enumeration 
+if($EnumerateFiles){
+    $p = Get-FilePath -Path $currentPathPsDir -FileName "file-enumeration.csv"
+    Get-ChildItem -Path $EnumPath -Recurse -Force | Select-Object -Property Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | Export-Csv $p -NoTypeInformation
+}
 
 # ----------------------------------------------------------------------------------------------------------
 
@@ -299,7 +335,6 @@ $p = Get-FilePath -Path $currentPathCmdDir -FileName "dns.txt"
 $result = ipconfig /displaydns 
 $result | Out-File -FilePath $p
 
-
 # ----------------------------------------------------------------------------------------------------------
 
 # System Variables
@@ -321,7 +356,6 @@ $p = Get-FilePath -Path $currentPath -FileName "errors.txt"
 $error | Out-File -FilePath $p
 
 # ----------------------------------------------------------------------------------------------------------
-
 
 # Hash all the files
 $files = Get-ChildItem -Recurse $currentPath
