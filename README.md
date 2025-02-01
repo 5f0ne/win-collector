@@ -85,6 +85,8 @@ The following data is collected:
   - Get-ChildItem
 - **Registry - Run Keys**
   - Get-ItemProperty
+- **Registry - Winlogon**
+  - Get-ItemProperty
 - **Autostart Folder**
   - Get-ChildItem
 - **System Variables**

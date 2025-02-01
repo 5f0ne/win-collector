@@ -299,6 +299,15 @@ $hkcuRunOnce | Out-File -Append -FilePath $p
 
 # ----------------------------------------------------------------------------------------------------------
 
+# Registry: Winlogon
+$p = Get-FilePath -Path $currentPathPsDir -FileName "reg-winlogon-keys.txt"
+$hklmWinlogon = Get-ItemProperty "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
+if($hklmWinlogon){
+    $hklmWinlogon | Out-File -FilePath $p
+}
+
+# ----------------------------------------------------------------------------------------------------------
+
 # Autostart Folder
 $currentUserAutoStart = $env:APPDATA + "\Microsoft\Windows\Start Menu\Programs\Startup"
 $systemAutoStart = "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp"
