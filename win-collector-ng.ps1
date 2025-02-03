@@ -265,6 +265,15 @@ foreach ($share in $shares){
 
 # ----------------------------------------------------------------------------------------------------------
 
+# Event Log: Available Log Files
+$p = Get-FilePath -Path $currentPathPsDir -FileName "available-event-logs.csv"
+Get-WinEvent -ListLog * -ComputerName localhost | Where-Object { $_.RecordCount } | 
+    Select-Object LogMode, RecordCount, LogName, FileSize, LastAccessTime, LastWriteTime, LogFilePath | 
+    Sort-Object -Descending -Property RecordCount |
+    Export-Csv $p -NoTypeInformation
+
+# ----------------------------------------------------------------------------------------------------------
+
 # Installed Programms
 $p = Get-FilePath -Path $currentPathPsDir -FileName "installed-programms.csv"
 Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Export-Csv $p -NoTypeInformation

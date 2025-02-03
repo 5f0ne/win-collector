@@ -77,6 +77,8 @@ The following data is collected:
   - Get-SmbSession
   - Get-SmbShare
   - Get-SmbShareAccess
+- **Event Log: Available Log Files**
+  - Get-WinEvent
 - **Installed Programs**
   - Get-ItemProperty
 - **HotFixes**
