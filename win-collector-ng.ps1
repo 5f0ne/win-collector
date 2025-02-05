@@ -53,7 +53,7 @@ function Get-FilePath {
 
 $startDateTime = Get-Date -Format "dd-MM-yyyy_HH-mm-ss"
 $startDateTimeEx = $(Get-Date)
-$machineName = $env:computername
+$machineName = $env:computername.Replace(" ","_")
 $basicInfo = $machineName + "." + $startDateTime
 
 $currentPath = $Output + "\" + $basicInfo
@@ -181,6 +181,18 @@ foreach ($task in $tasks){
         $taskName = $task.TaskName.Replace(" ","_")
         $result | Out-File -FilePath ($stp + "\" + $basicInfo + "." + $taskName + ".xml")
     }
+}
+
+# ----------------------------------------------------------------------------------------------------------
+
+# Powershell History
+# Finds all powershell files in powershell history standard path
+$psHistoryPath = $env:APPDATA + "\Microsoft\Windows\Powershell\PSReadLine"
+Get-ChildItem -Path $psHistoryPath -Force | ForEach-Object {
+    # if the file name contains spaces they are replaced with underscores
+    $fileName = "powershell-history-" + $_.Name.Replace(" ","_")
+    $p = Get-FilePath -Path $currentPathPsDir -FileName $fileName
+    Get-Content -LiteralPath $_.FullName | Out-File -FilePath $p
 }
 
 # ----------------------------------------------------------------------------------------------------------

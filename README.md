@@ -63,6 +63,8 @@ The following data is collected:
   - Get-ScheduledTask
   - Get-ScheduledTaskInfo
   - Export-ScheduledTask
+- **Powershell History**
+  - Get-ChildItem
 - **WMI**
   - Get-WMIObject
 - **Alternate Data Steams**
