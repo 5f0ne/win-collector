@@ -31,9 +31,9 @@ function New-OutputFolder {
             New-Item -Path $OutputPath -ItemType Directory -ErrorAction Stop | Out-Null #-Force
         }
         catch {
-            Write-Error -Message "Unable to create directory '$OutputPath'. Error was: $_" -ErrorAction Stop
+            Write-Error -Message "Unable to create directory " + $OutputPath + ". Error was: $_" -ErrorAction Stop
         }
-        "Successfully created directory '$OutputPath'."
+        "Successfully created directory " + $OutputPath + "."
     }
     else {
         "Directory already existed"
@@ -164,8 +164,8 @@ Get-LocalGroup | Select-Object Name | ForEach-Object {
 
     # The final object with the group name / member mapping is created
     $obj = New-Object -TypeName PSObject -Property @{     
-        'GroupName' = $_.Name
-        'Members' = $memberStr
+        "GroupName" = $_.Name
+        "Members" = $memberStr
     }
     $groupMembersList += $obj 
 }
@@ -233,7 +233,7 @@ if($EnumerateADS){
     $ads_content= Get-FilePath -Path $currentPathPsDir -FileName "alternate-data-streams-content.txt"
     $ads_array = @()
     # Iterate over path and get all files with an alternate data stream
-    Get-ChildItem -Path $EnumPath -Recurse -Force | Get-Item -Stream * | Where-Object {$_.Stream -ne ':$DATA'} | ForEach-Object {
+    Get-ChildItem -Path $EnumPath -Recurse -Force | Get-Item -Stream * | Where-Object {$_.Stream -ne ":$DATA"} | ForEach-Object {
         # Extract the content of the alternate data stream and write it to a file as a hexdump
         $filenameAndStream = "`n`n$($_.FileName):$($_.Stream)" 
         $filenameAndStream | Out-File -Append -FilePath $ads_content
