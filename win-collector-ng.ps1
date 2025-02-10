@@ -2,10 +2,6 @@
 #
 # Author: 5f-0
 #
-# Version: 1.0.0
-#
-# Usage: .\win-collector-ng.ps1 -Output output-dir -ErrorActionPreference
-# 
 
 param($ErrorActionPreference="SilentlyContinue", 
       # Path to write win collector output
@@ -15,8 +11,10 @@ param($ErrorActionPreference="SilentlyContinue",
       # If true, searches for alternate data streams in all files in $EnumPath
       $EnumerateADS=$false, 
       # If true, enumerates all files to provide a list of file paths in $EnumPath
-      $EnumerateFiles=$false
-      )
+      $EnumerateFiles=$false,
+      # If true, zip the result files
+      $Compress=$false
+)
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -45,6 +43,18 @@ function New-OutputFolder {
 function Get-FilePath {
     param($Path, $FileName)
     return $Path + "\" + $basicInfo + "." + $FileName
+}
+
+function Get-Hashes {
+    param($Path)
+    $Md5 = Get-FileHash -Algorithm MD5 -LiteralPath $Path | Select-Object Hash
+    $Sha256 = Get-FileHash -Algorithm SHA256 -LiteralPath $Path  | Select-Object Hash
+    $HashValues = New-Object -TypeName PSObject -Property @{
+        "FullName" = $Path
+        "MD5" = $Md5.Hash
+        "SHA256" = $Sha256.Hash
+    }
+    return $HashValues
 }
 
 # ----------------------------------------------------------------------------------------------------------
@@ -77,7 +87,8 @@ New-OutputFolder -OutputPath $currentPathCmdDir
 
 # Processes 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "processes.csv"
-Get-CimInstance -Class Win32_Process | Select-Object ProcessName, CreationDate, CSName, ProcessId, ParentProcessId, CommandLine | Export-Csv $p -NoTypeInformation
+Get-CimInstance -Class Win32_Process | Select-Object ProcessName, CreationDate, CSName, ProcessId, ParentProcessId, CommandLine | 
+    Export-Csv $p -NoTypeInformation
 
 # Processes with usernames
 $p = Get-FilePath -Path $currentPathPsDir -FileName "processes-with-usernames.txt"
@@ -91,10 +102,12 @@ Get-Process -FileVersionInfo | Select-Object FileName, FileVersion, CompanyName 
 
 # Network Usage
 $p = Get-FilePath -Path $currentPathPsDir -FileName "tcp.csv"
-Get-NetTCPConnection | Select-Object State, CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, OwningProcess | Export-Csv $p -NoTypeInformation
+Get-NetTCPConnection | Select-Object State, CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, OwningProcess | 
+    Export-Csv $p -NoTypeInformation
 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "udp.csv"
-Get-NetUDPEndpoint | Select-Object CreationTime, EnabledDefault, RequestedState, TransitioningToState, LocalAddress, LocalPort, OwningProcess | Export-Csv $p -NoTypeInformation
+Get-NetUDPEndpoint | Select-Object CreationTime, EnabledDefault, RequestedState, TransitioningToState, LocalAddress, LocalPort, OwningProcess | 
+    Export-Csv $p -NoTypeInformation
 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "dns-cache.csv"
 Get-DnsClientCache | Select-Object Status, Type, Entry, Name, DataLength, Data, TimeToLive | Export-Csv $p -NoTypeInformation
@@ -103,7 +116,8 @@ $p = Get-FilePath -Path $currentPathPsDir -FileName "dns-cache-table.txt"
 Get-DnsClientCache | Format-Table -AutoSize | Out-File $p
 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "net-route.csv"
-Get-NetRoute | Select-Object AddressFamily, State, TypeOfRoute, InterfaceAlias, ifIndex, DestinationPrefix, NextHop, RouteMetric, ifMetric | Export-Csv $p -NoTypeInformation
+Get-NetRoute | Select-Object AddressFamily, State, TypeOfRoute, InterfaceAlias, ifIndex, DestinationPrefix, NextHop, RouteMetric, ifMetric | 
+    Export-Csv $p -NoTypeInformation
 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "net-route-table.txt"
 Get-NetRoute | Format-Table -AutoSize | Out-File $p
@@ -118,13 +132,15 @@ Get-NetAdapter | Format-Table -AutoSize | Out-File $p
 
 # Services
 $p = Get-FilePath -Path $currentPathPsDir -FileName "services.csv"
-Get-CimInstance -Class Win32_Service | Select-Object Started, State, ProcessId, Name, StartName, Status, PathName, StartMode, ExitCode, Caption, Description | Export-Csv $p -NoTypeInformation
+Get-CimInstance -Class Win32_Service | Select-Object Started, State, ProcessId, Name, StartName, Status, PathName, StartMode, ExitCode, Caption, Description | 
+    Export-Csv $p -NoTypeInformation
 
 # ----------------------------------------------------------------------------------------------------------
 
 # Local Users
 $p = Get-FilePath -Path $currentPathPsDir -FileName "local-users.csv"
-Get-LocalUser | Select-Object Enabled, SID, PrincipalSource, FullName, UserMayChangePassword, PasswordRequired, Name, LastLogon, PasswordChageableDate, PasswordExpires, PasswordLastSet, Description | Export-Csv $p -NoTypeInformation
+Get-LocalUser | Select-Object Enabled, SID, PrincipalSource, FullName, UserMayChangePassword, PasswordRequired, Name, LastLogon, PasswordChageableDate, PasswordExpires, PasswordLastSet, Description |
+     Export-Csv $p -NoTypeInformation
 
 # ----------------------------------------------------------------------------------------------------------
 
@@ -202,7 +218,9 @@ $p = Get-FilePath -Path $currentPathPsDir -FileName "wmi-event-filter.csv"
 Get-WMIObject -Namespace root\Subscription -Class __EventFilter | Select-Object Name, EventNamespace, Query, QueryLanguage  | Export-Csv $p -NoTypeInformation
 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "wmi-event-consumer.csv"
-Get-WMIObject -Namespace root\Subscription -Class __EventConsumer | Select-Object Name, SourceName, CommandLineTemplate, ExecutablePath, ScriptFilename, ScriptingEngine, ScriptText | Export-Csv $p -NoTypeInformation
+Get-WMIObject -Namespace root\Subscription -Class __EventConsumer | 
+    Select-Object Name, SourceName, CommandLineTemplate, ExecutablePath, ScriptFilename, ScriptingEngine, ScriptText | 
+    Export-Csv $p -NoTypeInformation
 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "wmi-event-filter-consumer-binding.csv"
 Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding | Select-Object Filter, Consumer | Export-Csv $p -NoTypeInformation
@@ -288,7 +306,8 @@ Get-WinEvent -ListLog * -ComputerName localhost | Where-Object { $_.RecordCount 
 
 # Installed Programms
 $p = Get-FilePath -Path $currentPathPsDir -FileName "installed-programms.csv"
-Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Export-Csv $p -NoTypeInformation
+Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | 
+    Export-Csv $p -NoTypeInformation
 
 # ----------------------------------------------------------------------------------------------------------
 
@@ -301,7 +320,8 @@ Get-HotFix | Select-Object CSName, Description, HotFixID, InstalledBy, Installed
 # File Enumeration 
 if($EnumerateFiles){
     $p = Get-FilePath -Path $currentPathPsDir -FileName "file-enumeration.csv"
-    Get-ChildItem -Path $EnumPath -Recurse -Force | Select-Object -Property Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | Export-Csv $p -NoTypeInformation
+    Get-ChildItem -Path $EnumPath -Recurse -Force | Select-Object -Property Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | 
+        Export-Csv $p -NoTypeInformation
 }
 
 # ----------------------------------------------------------------------------------------------------------
@@ -334,9 +354,11 @@ $currentUserAutoStart = $env:APPDATA + "\Microsoft\Windows\Start Menu\Programs\S
 $systemAutoStart = "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp"
 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "autostart-folder-current-user.csv"
-Get-ChildItem -Path $currentUserAutoStart -Recurse -Force | Select-Object Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | Export-Csv $p -NoTypeInformation
+Get-ChildItem -Path $currentUserAutoStart -Recurse -Force | Select-Object Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | 
+    Export-Csv $p -NoTypeInformation
 $p = Get-FilePath -Path $currentPathPsDir -FileName "autostart-folder-system.csv"
-Get-ChildItem -Path $systemAutoStart -Recurse -Force | Select-Object Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | Export-Csv $p -NoTypeInformation
+Get-ChildItem -Path $systemAutoStart -Recurse -Force | Select-Object Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | 
+    Export-Csv $p -NoTypeInformation
 
 # ----------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------
@@ -392,32 +414,6 @@ $result | Out-File -FilePath $p
 
 # ----------------------------------------------------------------------------------------------------------
 
-# Save error array
-$p = Get-FilePath -Path $currentPath -FileName "errors.txt"
-$error | Out-File -FilePath $p
-
-# ----------------------------------------------------------------------------------------------------------
-
-# Hash all the files
-$files = Get-ChildItem -Recurse $currentPath
-
-$hash_array = @()
-foreach ($f in $files){
-    $md5 = Get-FileHash -Algorithm MD5 -LiteralPath $f.FullName | Select-Object Hash
-    $sha256 = Get-FileHash -Algorithm SHA256 -LiteralPath $f.FullName | Select-Object Hash
-    $obj = New-Object -TypeName PSObject -Property @{
-        "FullName" = $f.FullName
-        "MD5" = $md5.Hash
-        "SHA256" = $sha256.Hash
-    }
-    $hash_array += $obj
-}
-
-$p = Get-FilePath -Path $currentPath -FileName "hashes.csv"
-$hash_array | Select-Object FullName, MD5, SHA256 | Export-Csv $p -NoTypeInformation
-
-# ----------------------------------------------------------------------------------------------------------
-
 # Write Execution Time
 $endDateTime = Get-Date -Format "dd-MM-yyyy_HH-mm-ss"
 $elapsedTime = $(Get-Date) - $startDateTimeEx
@@ -431,3 +427,52 @@ $obj = New-Object -TypeName PSObject -Property @{
 }
 
 $obj | Format-List | Out-File -FilePath $p
+
+# ----------------------------------------------------------------------------------------------------------
+
+# Save error array
+$p = Get-FilePath -Path $currentPath -FileName "errors.txt"
+$error | Out-File -FilePath $p
+
+# ----------------------------------------------------------------------------------------------------------
+
+# Hash all the files
+$files = Get-ChildItem -Recurse $currentPath
+
+$hash_array = @()
+foreach ($f in $files){
+    $hash_array += Get-Hashes -Path $f.FullName
+}
+
+$p = Get-FilePath -Path $currentPath -FileName "hashes.csv"
+$hash_array | Select-Object FullName, MD5, SHA256 | Export-Csv $p -NoTypeInformation
+
+# ----------------------------------------------------------------------------------------------------------
+
+# Create an archive
+# -> *.compressed.zip is the intermediate zip file which includes 
+if($Compress){
+    Start-Sleep(5)
+    $IntermediateArchive = $Output +  "\" + $basicInfo + ".compressed.zip"
+    $currentPathWithoutRoot = $currentPath + "\*"
+    Compress-Archive -Path $currentPathWithoutRoot -DestinationPath $IntermediateArchive -Force
+    # Hash the intermediate archive
+    $hashes = Get-Hashes -Path $IntermediateArchive
+    $hash_array = @($hashes)
+    $p = Get-FilePath -Path $Output -FileName "hashes.compressed.csv"
+    $hash_array | Select-Object FullName, MD5, SHA256 | Export-Csv $p -NoTypeInformation
+    # Create final archive
+    $finalArchive = $Output +  "\" + $basicInfo + ".compressed.final.zip"
+    $archiveConfig = @{
+        LiteralPath= $IntermediateArchive, $p
+        CompressionLevel = "Optimal"
+        DestinationPath = $finalArchive
+    }
+    Compress-Archive @archiveConfig
+    # Hash final archive
+    $hashes = Get-Hashes -Path $finalArchive
+    $hash_array = @($hashes)
+    $p = Get-FilePath -Path $Output -FileName "hashes.compressed.final.csv"
+    $hash_array | Select-Object FullName, MD5, SHA256 | Export-Csv $p -NoTypeInformation
+    
+} 

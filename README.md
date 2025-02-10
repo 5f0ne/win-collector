@@ -4,7 +4,7 @@ Collects basic system information on a Windows host with Powershell enabled and 
 
 # Usage
 
-`.\win-collector-ng.ps1 -ErrorActionPreference [STRING] -Output [STRING] -EnumPath [STRING] -EnumerateADS [BOOL] -EnumerateFiles [BOOL]`
+`.\win-collector-ng.ps1 -ErrorActionPreference [STRING] -Output [STRING] -EnumPath [STRING] -EnumerateADS [BOOL] -EnumerateFiles [BOOL] -Compress [BOOL]`
 
 | Option | Type | Default | Description |
 |---|---|---|---|
@@ -13,6 +13,7 @@ Collects basic system information on a Windows host with Powershell enabled and 
 | $EnumPath | String | $env:USERPROFILE| Path to apply following enumeration tasks |
 | $EnumerateADS | Boolean | $false | If true, searches for alternate data streams in all files in $EnumPath |
 | $EnumerateFiles | Boolean | $false | If true, enumerates all files to provide a list of file paths in $EnumPath |
+| $Compress | Boolean | $false | If true, an archive of the files is created and hashed |
 
 # Example
 
