@@ -88,9 +88,7 @@ The following data is collected:
   - Get-HotFix
 - **Files in Home Dir**
   - Get-ChildItem
-- **Registry - Run Keys**
-  - Get-ItemProperty
-- **Registry - Winlogon**
+- **Registry - Keys of Interest**
   - Get-ItemProperty
 - **Autostart Folder**
   - Get-ChildItem

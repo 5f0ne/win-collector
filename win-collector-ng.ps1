@@ -57,6 +57,17 @@ function Get-Hashes {
     return $HashValues
 }
 
+function Get-RegistryValues {
+    param($Path, $KeyName="")
+    $result = "No value found!"
+    if($KeyName -eq ""){
+        $result = Get-ItemProperty $Path
+    } else {
+        $result = Get-ItemProperty $Path -Name $KeyName
+    }
+    return $result
+}
+
 # ----------------------------------------------------------------------------------------------------------
 
 # Variables
@@ -326,25 +337,64 @@ if($EnumerateFiles){
 
 # ----------------------------------------------------------------------------------------------------------
 
-# Registry: Run Keys
-$p = Get-FilePath -Path $currentPathPsDir -FileName "reg-run-keys.txt"
+# Registry: Keys of Interest
+$p = Get-FilePath -Path $currentPathPsDir -FileName "reg-keys-of-interest.txt"
 
-$hklmRun = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Run
-$hklmRun | Out-File -Append -FilePath $p
-$hklmRunOnce = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce
-$hklmRunOnce | Out-File -Append -FilePath $p
-$hkcuRun = Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Run
-$hkcuRun | Out-File -Append -FilePath $p
-$hkcuRunOnce = Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce
-$hkcuRunOnce | Out-File -Append -FilePath $p
+$regKeys = @(@{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+               KeyName = "" },
+             @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+               KeyName = "" },
+             @{Path = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Windows\Run"
+               KeyName = "" },
+             @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"
+               KeyName = "" },
+             @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders"
+               KeyName = "" },
+             @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+               KeyName = "" },
+             @{Path = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
+               KeyName = "" }
+            # -------------------------------------------------------------    
+             @{Path = "HKCU:\Environment"
+               KeyName = "UserInitMprLogonScript" },
+            # -------------------------------------------------------------
+             @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run"
+               KeyName = "" },
+             @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+               KeyName = "" },
+             @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"
+               KeyName = "" },
+             @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunServices"
+               KeyName = "" },
+             @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce"
+               KeyName = "" },
+             @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders"
+               KeyName = "" },
+             @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+               KeyName = "" },
+             @{Path = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
+               KeyName = "" },
+             @{Path = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\IniFileMapping\system.ini\boot"
+               KeyName = "" },
+            # -------------------------------------------------------------
+             @{Path = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Windows"
+               KeyName = "AppInit_DLLs" },
+             @{Path = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
+               KeyName = "Userinit" },
+             @{Path = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager"
+               KeyName = "BootExecute" },
+             @{Path = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager"
+               KeyName = "KnownDLLs" })
 
-# ----------------------------------------------------------------------------------------------------------
-
-# Registry: Winlogon
-$p = Get-FilePath -Path $currentPathPsDir -FileName "reg-winlogon-keys.txt"
-$hklmWinlogon = Get-ItemProperty "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
-if($hklmWinlogon){
-    $hklmWinlogon | Out-File -FilePath $p
+$regKeys | ForEach-Object {
+    $result = Get-RegistryValues -Path $_.Path -KeyName $_.KeyName
+    $path = $_.Path
+    $key = $_.KeyName
+    $heading = "`n--> $path $key `n---`n"
+    $heading | Out-File -Append -FilePath $p
+    $result | Out-File -Append -FilePath $p
+    $line = "----------------------------------------------------------------------------------------------------------"
+    $line | Out-File -Append -FilePath $p
 }
 
 # ----------------------------------------------------------------------------------------------------------
