@@ -8,12 +8,12 @@ Collects basic system information on a Windows host with Powershell enabled and 
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| $ErrorActionPreference | String | SilentlyContinue | Powershell variable to defined what happens, when an error occur. |
-| $Output | String | .\win-collector-ng | Path to write win-collector output |
-| $EnumPath | String | $env:USERPROFILE| Path to apply following enumeration tasks |
-| $EnumerateADS | Boolean | $false | If true, searches for alternate data streams in all files in $EnumPath |
-| $EnumerateFiles | Boolean | $false | If true, enumerates all files to provide a list of file paths in $EnumPath |
-| $Compress | Boolean | $false | If true, an archive of the files is created and hashed |
+| -ErrorActionPreference | String | SilentlyContinue | Powershell variable to defined what happens, when an error occur. |
+| -Output | String | .\win-collector-ng | Path to write win-collector output |
+| -EnumPath | String | $env:USERPROFILE| Path to apply following enumeration tasks |
+| -EnumerateADS | Boolean | $false | If true, searches for alternate data streams in all files in $EnumPath |
+| -EnumerateFiles | Boolean | $false | If true, enumerates all files to provide a list of file paths in $EnumPath |
+| -Compress | Boolean | $false | If true, an archive of the files is created and hashed |
 
 # Example
 

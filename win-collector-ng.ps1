@@ -19,14 +19,10 @@ param($ErrorActionPreference="SilentlyContinue",
 # ---------------------------------------------------------------------------------------------------------
 
 # Functions
-
 function New-OutputFolder {
-    param (
-        $OutputPath
-    )
+    param ($OutputPath)
     
     if (-not (Test-Path -LiteralPath $OutputPath)) {
-    
         try {
             New-Item -Path $OutputPath -ItemType Directory -ErrorAction Stop | Out-Null #-Force
         }
@@ -71,7 +67,6 @@ function Get-RegistryValues {
 # ----------------------------------------------------------------------------------------------------------
 
 # Variables
-
 $startDateTime = Get-Date -Format "dd-MM-yyyy_HH-mm-ss"
 $startDateTimeEx = $(Get-Date)
 $machineName = $env:computername.Replace(" ","_")
@@ -85,7 +80,6 @@ $currentPathCmdDir = $currentPath + "\cmd"
 # ----------------------------------------------------------------------------------------------------------
 
 # Create Directories
-
 New-OutputFolder -OutputPath $currentPath
 New-OutputFolder -OutputPath $currentPathPsDir
 New-OutputFolder -OutputPath $currentPathCmdDir
@@ -379,6 +373,8 @@ $regKeys = @(@{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
                KeyName = "" },
              @{Path = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\IniFileMapping\system.ini\boot"
                KeyName = "" },
+             @{Path = "HKLM:\System\CurrentControlSet\Control\SecurityProviders\WDigest"
+               KeyName = "" },
             # -------------------------------------------------------------
              @{Path = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Windows"
                KeyName = "AppInit_DLLs" },
@@ -526,6 +522,5 @@ if($Compress){
     $hashes = Get-Hashes -Path $finalArchive
     $hash_array = @($hashes)
     $p = Get-FilePath -Path $Output -FileName "hashes.compressed.final.csv"
-    $hash_array | Select-Object FullName, MD5, SHA256 | Export-Csv $p -NoTypeInformation
-    
+    $hash_array | Select-Object FullName, MD5, SHA256 | Export-Csv $p -NoTypeInformation 
 } 
