@@ -354,6 +354,8 @@ $regKeys = @(@{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
             # -------------------------------------------------------------    
              @{Path = "HKCU:\Environment"
                KeyName = "UserInitMprLogonScript" },
+             @{Path = "HKCU:\Control Panel\Desktop"
+               KeyName = "SCRNSAVE.EXE" },
             # -------------------------------------------------------------
              @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run"
                KeyName = "" },
