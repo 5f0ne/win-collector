@@ -13,6 +13,7 @@ Collects basic system information on a Windows host with Powershell enabled and 
 | -EnumPath | String | $env:USERPROFILE| Path to apply following enumeration tasks |
 | -EnumerateADS | Boolean | $false | If true, searches for alternate data streams in all files in $EnumPath |
 | -EnumerateFiles | Boolean | $false | If true, enumerates all files to provide a list of file paths in $EnumPath |
+| -EnumerateFileAssociation | Boolean | $false | If true, enumerate file association and their associated programm to open it |
 | -Compress | Boolean | $false | If true, an archive of the files is created and hashed |
 
 # Example
@@ -88,7 +89,10 @@ The following data is collected:
   - Get-HotFix
 - **Files in Home Dir**
   - Get-ChildItem
-- **Registry - Keys of Interest**
+- **Registry: Keys of Interest**
+  - Get-ItemProperty
+- **Registry: File Association**
+  - Get-ChildItem
   - Get-ItemProperty
 - **Autostart Folder**
   - Get-ChildItem

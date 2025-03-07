@@ -12,6 +12,8 @@ param($ErrorActionPreference="SilentlyContinue",
       $EnumerateADS=$false, 
       # If true, enumerates all files to provide a list of file paths in $EnumPath
       $EnumerateFiles=$false,
+      # If true, enumerate file association and their associated programm to open it 
+      $EnumerateFileAssociation=$false,
       # If true, zip the result files
       $Compress=$false
 )
@@ -396,6 +398,29 @@ $regKeys | ForEach-Object {
     $result | Out-File -Append -FilePath $p
     $line = "----------------------------------------------------------------------------------------------------------"
     $line | Out-File -Append -FilePath $p
+}
+
+# ----------------------------------------------------------------------------------------------------------
+
+# Registry: File Association
+
+if($EnumerateFileAssociation) {
+  $p = Get-FilePath -Path $currentPathPsDir -FileName "file-association.csv"
+  $command_array = @()
+
+  Get-ChildItem "Registry::HKEY_CLASSES_ROOT\" -Recurse -Force | ForEach-Object {
+      if($_.Name.toLower().Contains("shell\open\command")) {
+          $path = "Registry::" + $_.Name
+          $cmd = (Get-ItemProperty -LiteralPath $path).'(default)'
+          $obj = New-Object -TypeName PSObject -Property @{
+              "KeyName" = $_.Name
+              "Command" = $cmd
+          }
+          $command_array += $obj
+      }
+  }
+
+  $command_array | Select-Object KeyName, Command | Export-Csv $p -NoTypeInformation
 }
 
 # ----------------------------------------------------------------------------------------------------------
