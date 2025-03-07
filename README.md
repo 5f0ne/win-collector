@@ -96,6 +96,8 @@ The following data is collected:
   - cmd.exe /c set
 - **System Information**
   - systeminfo
+- **Cached Kerberos Tickets**
+  - klist
 
 # License 
 

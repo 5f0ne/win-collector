@@ -463,6 +463,13 @@ $result | Out-File -FilePath $p
 
 # ----------------------------------------------------------------------------------------------------------
 
+# Cached Kerberos Tickets
+$p = Get-FilePath -Path $currentPathCmdDir -FileName "cached-kerberos-tickets.txt"
+$result = klist
+$result | Out-File -FilePath $p
+
+# ----------------------------------------------------------------------------------------------------------
+
 # Write Execution Time
 $endDateTime = Get-Date -Format "dd-MM-yyyy_HH-mm-ss"
 $elapsedTime = $(Get-Date) - $startDateTimeEx
