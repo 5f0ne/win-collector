@@ -4,7 +4,7 @@ Collects basic system information on a Windows host with Powershell enabled and 
 
 # Usage
 
-`.\win-collector-ng.ps1 -ErrorActionPreference [STRING] -Output [STRING] -EnumPath [STRING] -EnumerateADS [BOOL] -EnumerateFiles [BOOL] -Compress [BOOL]`
+`.\win-collector-ng.ps1 -ErrorActionPreference [STRING] -Output [STRING] -EnumPath [STRING] -EnumerateADS [BOOL] -EnumerateFiles [BOOL] -EnumerateFileAssociation [BOOL] -Compress [BOOL]`
 
 | Option | Type | Default | Description |
 |---|---|---|---|
