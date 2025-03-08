@@ -28,13 +28,16 @@ Open Powershell, preferably with admin rights and use:
 
 Each run of the script create a folder in the directory `win-collector-ng` where the script is located. The folder name consists of:
 
-`[computer name].[datetime]`
+`[computer name].[datetime in UTC]`
 
 Example:
 
-`Laptop1.01-01-1970_10-10-10`
+`Laptop1.01-01-1970_10-10-10Z`
 
-Within the folder, all data are available as `csv` files for the powershell commands. If we need to extract actual content, this content is saved into a `txt` file. For the old commands the output is written to a `txt` file. There is a SHA256 and MD5 hash generated for each file in this folder an saved into a separate file for verification purposes. Additionally all errors from `$error` and information on the execution time is also saved into a `txt` file.
+Within the folder, all data are available as `csv` files for the powershell commands. If we need to extract actual content, this content is saved into a `txt` file. For the old commands the output is written to a `txt` file. There is a SHA256 and MD5 hash generated for each file in this folder an saved into a separate file for verification purposes. Additionally all errors from `$error` and information on the execution time is also saved into a `txt` file. 
+
+For timezone management please have a look at `win-collector-ng\Laptop1.01-01-1970_10-10-10Z\cmd\Laptop1.01-01-1970_10-10-10Z.system-info.txt` where the systems time zone is described. The timestamps in the other files are
+in this timezone if not specifically described as UTC timestamps.
 
 # Data
 

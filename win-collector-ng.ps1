@@ -78,10 +78,10 @@ function Get-RegistryValues {
 # ----------------------------------------------------------------------------------------------------------
 
 # Variables
-$startDateTime = Get-Date -Format "dd-MM-yyyy_HH-mm-ss"
-$startDateTimeEx = $(Get-Date)
+$startDateTime = (Get-Date).ToUniversalTime()
+$startDateTimeFormatStr = $startDateTime.ToString("dd-MM-yyyy_HH-mm-ssZ")
 $machineName = $env:computername.Replace(" ","_")
-$basicInfo = $machineName + "." + $startDateTime
+$basicInfo = $machineName + "." + $startDateTimeFormatStr
 
 $currentPath = $Output + "\" + $basicInfo
 
@@ -546,15 +546,18 @@ $result | Out-File -FilePath $p
 # ----------------------------------------------------------------------------------------------------------
 
 # Write Execution Time
-$endDateTime = Get-Date -Format "dd-MM-yyyy_HH-mm-ss"
-$elapsedTime = $(Get-Date) - $startDateTimeEx
+
+$endDateTime = (Get-Date).ToUniversalTime()
+$endDateTimeFormatStr = $endDateTime.ToString("dd-MM-yyyy_HH-mm-ssZ")
+
+$elapsedTime = $endDateTime - $startDateTime
 
 $p = Get-FilePath -Path $currentPath -FileName "execution-time.txt"
 
 $obj = New-Object -TypeName PSObject -Property @{
     "Duration" = $elapsedTime
-    "End" = $endDateTime
-    "Start" = $startDateTime
+    "End" = $endDateTimeFormatStr
+    "Start" = $startDateTimeFormatStr
 }
 
 $obj | Format-List | Out-File -FilePath $p
