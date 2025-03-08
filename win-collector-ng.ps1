@@ -12,6 +12,9 @@ param($ErrorActionPreference="SilentlyContinue",
       $FileEnumPath=$env:USERPROFILE,
       # Path for shortcut enumeration
       $LnkEnumPath=$env:USERPROFILE,
+      # Enumerates only files with the given file extension in $FileEnumPath. Example: -FileEnumFilters "pdf, docx, png" 
+      # If no filters are given (default value), all files in $FileEnumPath are going to be enumerated
+      $FileEnumFilters="", 
       # If true, searches for alternate data streams in all files located in $AdsEnumPath
       $EnumerateADS=$false, 
       # If true, enumerates all files to provide a list of file paths located in $FileEnumPath
@@ -336,8 +339,27 @@ Get-HotFix | Select-Object CSName, Description, HotFixID, InstalledBy, Installed
 # File Enumeration 
 if($EnumerateFiles){
     $p = Get-FilePath -Path $currentPathPsDir -FileName "file-enumeration.csv"
-    Get-ChildItem -Path $FileEnumPath -Recurse -Force | Select-Object -Property Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | 
+    if($FileEnumFilters -eq "") {
+        # Enumerates all files in the fiven path
+        Get-ChildItem -Path $FileEnumPath -Recurse -Force | Select-Object -Property Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | 
         Export-Csv $p -NoTypeInformation
+    } else {
+        # Enumerates only the files described by the given file extensions
+        $filters_ready = @()
+        $result = @()
+        $filters = $FileEnumFilters.Split(",").trim()
+        foreach($f in $filters){
+          $filters_ready += "*." + $f
+        }
+        Get-ChildItem -Path $FileEnumPath -Recurse -Force | Select-Object -Property Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | ForEach-Object {
+            foreach($v in $filters_ready){
+                if($_.FullName -Like $v) {
+                    $result += $_
+                }
+            }
+        }
+        $result | Export-Csv $p -NoTypeInformation
+    }    
 }
 
 # ----------------------------------------------------------------------------------------------------------
@@ -346,7 +368,7 @@ if($EnumerateFiles){
 if($EnumerateShortcuts) {
   $p = Get-FilePath -Path $currentPathPsDir -FileName "shortcut-target-enumeration.csv"
   $result_array = @() 
-  $paths = Get-ChildItem -Path $LnkEnumPath -Filter *.lnk -Recurse | Get-ItemProperty | ForEach-Object {
+  Get-ChildItem -Path $LnkEnumPath -Filter *.lnk -Recurse | Get-ItemProperty | ForEach-Object {
       $sh = New-Object -ComObject WScript.Shell
       $target = $sh.CreateShortcut($_.FullName).TargetPath
       $arguments = $sh.CreateShortcut($_.FullName).Arguments

@@ -4,7 +4,7 @@ Collects basic system information on a Windows host with Powershell enabled and 
 
 # Usage
 
-`.\win-collector-ng.ps1 -ErrorActionPreference [STRING] -Output [STRING] -AdsEnumPath [STRING] -FileEnumPath [STRING] -LnkEnumPath [STRING] -EnumerateADS [BOOL] -EnumerateFiles [BOOL] -EnumerateShortcuts [BOOL] -EnumerateFileAssociation [BOOL] -Compress [BOOL]`
+`.\win-collector-ng.ps1 -ErrorActionPreference [STRING] -Output [STRING] -AdsEnumPath [STRING] -FileEnumPath [STRING] -LnkEnumPath [STRING] -FileEnumFilters [STRING] -EnumerateADS [BOOL] -EnumerateFiles [BOOL] -EnumerateShortcuts [BOOL] -EnumerateFileAssociation [BOOL] -Compress [BOOL]`
 
 | Option | Type | Default | Description |
 |---|---|---|---|
@@ -13,6 +13,7 @@ Collects basic system information on a Windows host with Powershell enabled and 
 | -AdsEnumPath | String | $env:USERPROFILE | Path for alternate data stream enumeration |
 | -FileEnumPath | String | $env:USERPROFILE | Path for directory / file enumeration |
 | -LnkEnumPath | String | $env:USERPROFILE | Path for shortcut enumeration |
+| -FileEnumFilters | String | "" | Enumerates only files with the given file extension in $FileEnumPath. Example: -FileEnumFilters "pdf, docx, png". If no filters are given (default value), all files in $FileEnumPath are going to be enumerated |
 | -EnumerateADS | Boolean | $false | If true, searches for alternate data streams in all files located in $AdsEnumPath |
 | -EnumerateFiles | Boolean | $false | If true, enumerates all files to provide a list of file paths located in $FileEnumPath |
 | -EnumerateShortcuts | Boolean | $false | If true, enumerates all shortcuts to provide a list of the shortcut`s target property located in $LnkEnumPath |
