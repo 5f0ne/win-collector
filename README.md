@@ -90,7 +90,9 @@ The following data is collected:
   - Get-ItemProperty
 - **HotFixes**
   - Get-HotFix
-- **Files in Home Dir**
+- **File Enumeration**
+  - Get-ChildItem
+- **Shortcut Enumeration**
   - Get-ChildItem
 - **Registry: Keys of Interest**
   - Get-ItemProperty
