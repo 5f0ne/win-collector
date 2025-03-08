@@ -6,13 +6,19 @@
 param($ErrorActionPreference="SilentlyContinue", 
       # Path to write win collector output
       $Output=".\win-collector-ng", 
-      # Path for enumeration (ADS)
-      $EnumPath=$env:USERPROFILE,
-      # If true, searches for alternate data streams in all files in $EnumPath
+      # Path for alternate data stream enumeration
+      $AdsEnumPath=$env:USERPROFILE,
+      # Path for directory / file enumeration
+      $FileEnumPath=$env:USERPROFILE,
+      # Path for shortcut enumeration
+      $LnkEnumPath=$env:USERPROFILE,
+      # If true, searches for alternate data streams in all files located in $AdsEnumPath
       $EnumerateADS=$false, 
-      # If true, enumerates all files to provide a list of file paths in $EnumPath
+      # If true, enumerates all files to provide a list of file paths located in $FileEnumPath
       $EnumerateFiles=$false,
-      # If true, enumerate file association and their associated programm to open it 
+      # If true, enumerates all shortcuts to provide a list of the shortcut`s target property located in $LnkEnumPath
+      $EnumerateShortcuts=$false,
+      # If true, enumerate file association in the registry and their associated programm to open it 
       $EnumerateFileAssociation=$false,
       # If true, zip the result files
       $Compress=$false
@@ -243,7 +249,7 @@ if($EnumerateADS){
     $ads_content= Get-FilePath -Path $currentPathPsDir -FileName "alternate-data-streams-content.txt"
     $ads_array = @()
     # Iterate over path and get all files with an alternate data stream
-    Get-ChildItem -Path $EnumPath -Recurse -Force | Get-Item -Stream * | Where-Object {$_.Stream -ne ":`$DATA"} | ForEach-Object {
+    Get-ChildItem -Path $AdsEnumPath -Recurse -Force | Get-Item -Stream * | Where-Object {$_.Stream -ne ":`$DATA"} | ForEach-Object {
         # Extract the content of the alternate data stream and write it to a file as a hexdump
         $filenameAndStream = "`n`n$($_.FileName):$($_.Stream)" 
         $filenameAndStream | Out-File -Append -FilePath $ads_content
@@ -330,8 +336,29 @@ Get-HotFix | Select-Object CSName, Description, HotFixID, InstalledBy, Installed
 # File Enumeration 
 if($EnumerateFiles){
     $p = Get-FilePath -Path $currentPathPsDir -FileName "file-enumeration.csv"
-    Get-ChildItem -Path $EnumPath -Recurse -Force | Select-Object -Property Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | 
+    Get-ChildItem -Path $FileEnumPath -Recurse -Force | Select-Object -Property Extension, Length, CreationTimeUtc, LastAccessTimeUtc, LastWriteTimeUtc, FullName | 
         Export-Csv $p -NoTypeInformation
+}
+
+# ----------------------------------------------------------------------------------------------------------
+
+# Shortcut Enumeration 
+if($EnumerateShortcuts) {
+  $p = Get-FilePath -Path $currentPathPsDir -FileName "shortcut-target-enumeration.csv"
+  $result_array = @() 
+  $paths = Get-ChildItem -Path $LnkEnumPath -Filter *.lnk -Recurse | Get-ItemProperty | ForEach-Object {
+      $sh = New-Object -ComObject WScript.Shell
+      $target = $sh.CreateShortcut($_.FullName).TargetPath
+      $arguments = $sh.CreateShortcut($_.FullName).Arguments
+      $obj = New-Object -TypeName PSObject -Property @{
+          "Name" = $_.FullName
+          "Target" = $target
+          "Arguments" = $arguments
+      }
+      $result_array += $obj
+      [Runtime.InteropServices.Marshal]::ReleaseComObject($sh) | Out-Null
+  }
+  $result_array | Select-Object Name, Target, Arguments | Export-Csv $p -NoTypeInformation
 }
 
 # ----------------------------------------------------------------------------------------------------------
@@ -405,7 +432,7 @@ $regKeys | ForEach-Object {
 # Registry: File Association
 
 if($EnumerateFileAssociation) {
-  $p = Get-FilePath -Path $currentPathPsDir -FileName "file-association.csv"
+  $p = Get-FilePath -Path $currentPathPsDir -FileName "file-association-enumeration.csv"
   $command_array = @()
 
   Get-ChildItem "Registry::HKEY_CLASSES_ROOT\" -Recurse -Force | ForEach-Object {
@@ -419,7 +446,6 @@ if($EnumerateFileAssociation) {
           $command_array += $obj
       }
   }
-
   $command_array | Select-Object KeyName, Command | Export-Csv $p -NoTypeInformation
 }
 

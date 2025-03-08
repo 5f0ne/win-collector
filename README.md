@@ -4,16 +4,19 @@ Collects basic system information on a Windows host with Powershell enabled and 
 
 # Usage
 
-`.\win-collector-ng.ps1 -ErrorActionPreference [STRING] -Output [STRING] -EnumPath [STRING] -EnumerateADS [BOOL] -EnumerateFiles [BOOL] -EnumerateFileAssociation [BOOL] -Compress [BOOL]`
+`.\win-collector-ng.ps1 -ErrorActionPreference [STRING] -Output [STRING] -AdsEnumPath [STRING] -FileEnumPath [STRING] -LnkEnumPath [STRING] -EnumerateADS [BOOL] -EnumerateFiles [BOOL] -EnumerateShortcuts [BOOL] -EnumerateFileAssociation [BOOL] -Compress [BOOL]`
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | -ErrorActionPreference | String | SilentlyContinue | Powershell variable to defined what happens, when an error occur. |
 | -Output | String | .\win-collector-ng | Path to write win-collector output |
-| -EnumPath | String | $env:USERPROFILE| Path to apply following enumeration tasks |
-| -EnumerateADS | Boolean | $false | If true, searches for alternate data streams in all files in $EnumPath |
-| -EnumerateFiles | Boolean | $false | If true, enumerates all files to provide a list of file paths in $EnumPath |
-| -EnumerateFileAssociation | Boolean | $false | If true, enumerate file association and their associated programm to open it |
+| -AdsEnumPath | String | $env:USERPROFILE | Path for alternate data stream enumeration |
+| -FileEnumPath | String | $env:USERPROFILE | Path for directory / file enumeration |
+| -LnkEnumPath | String | $env:USERPROFILE | Path for shortcut enumeration |
+| -EnumerateADS | Boolean | $false | If true, searches for alternate data streams in all files located in $AdsEnumPath |
+| -EnumerateFiles | Boolean | $false | If true, enumerates all files to provide a list of file paths located in $FileEnumPath |
+| -EnumerateShortcuts | Boolean | $false | If true, enumerates all shortcuts to provide a list of the shortcut`s target property located in $LnkEnumPath |
+| -EnumerateFileAssociation | Boolean | $false | If true, enumerate file association in the registry and their associated programm to open it |
 | -Compress | Boolean | $false | If true, an archive of the files is created and hashed |
 
 # Example
