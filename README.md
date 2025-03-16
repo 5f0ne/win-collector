@@ -111,6 +111,8 @@ The following data is collected:
   - systeminfo
 - **Cached Kerberos Tickets**
   - klist
+- **User Account Information**
+  - whoami /all
 
 # License 
 

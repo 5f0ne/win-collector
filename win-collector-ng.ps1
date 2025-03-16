@@ -545,6 +545,13 @@ $result | Out-File -FilePath $p
 
 # ----------------------------------------------------------------------------------------------------------
 
+# User  Account Information
+$p = Get-FilePath -Path $currentPathCmdDir -FileName "user-account-information.txt"
+$result = whoami /all
+$result | Out-File -FilePath $p
+
+# ----------------------------------------------------------------------------------------------------------
+
 # Write Execution Time
 
 $endDateTime = (Get-Date).ToUniversalTime()
