@@ -72,6 +72,8 @@ The following data is collected:
   - Get-ScheduledTask
   - Get-ScheduledTaskInfo
   - Export-ScheduledTask
+- **ScheduledTask Actions**
+  - Get-Content
 - **Powershell History**
   - Get-ChildItem
 - **WMI**
