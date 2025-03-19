@@ -103,7 +103,8 @@ New-OutputFolder -OutputPath $currentPathCmdDir
 
 # Processes 
 $p = Get-FilePath -Path $currentPathPsDir -FileName "processes.csv"
-Get-CimInstance -Class Win32_Process | Select-Object ProcessName, CreationDate, CSName, ProcessId, ParentProcessId, CommandLine | 
+Get-CimInstance -Class Win32_Process | Select-Object CreationDate, CSName, ProcessId, ParentProcessId, ProcessName, CommandLine, ExecutablePath | 
+    Sort-Object ProcessId | 
     Export-Csv $p -NoTypeInformation
 
 # Processes with usernames
