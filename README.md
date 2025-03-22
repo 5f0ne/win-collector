@@ -92,6 +92,8 @@ The following data is collected:
   - Get-SmbSession
   - Get-SmbShare
   - Get-SmbShareAccess
+- **Printers**
+  - Get-Printer
 - **Event Log: Available Log Files**
   - Get-WinEvent
 - **Installed Programs**

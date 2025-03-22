@@ -414,6 +414,12 @@ foreach ($share in $shares){
 
 # ----------------------------------------------------------------------------------------------------------
 
+# Printers
+$p = Get-FilePath -Path $currentPathPsDir -FileName "printers.csv"
+Get-Printer | Select-Object Name, ComputerName, Type, DriverName, PortName, Shared, Published, DeviceType | Export-Csv $p -NoTypeInformation
+
+# ----------------------------------------------------------------------------------------------------------
+
 # Event Log: Available Log Files
 $p = Get-FilePath -Path $currentPathPsDir -FileName "available-event-logs.csv"
 Get-WinEvent -ListLog * -ComputerName localhost | Where-Object { $_.RecordCount } | 
