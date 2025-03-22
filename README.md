@@ -36,7 +36,7 @@ Example:
 
 Within the folder, all data are available as `csv` files for the powershell commands. If we need to extract actual content, this content is saved into a `txt` file. For the old commands the output is written to a `txt` file. There is a SHA256 and MD5 hash generated for each file in this folder an saved into a separate file for verification purposes. Additionally all errors from `$error` and information on the execution time is also saved into a `txt` file. 
 
-For timezone management please have a look at `win-collector-ng\Laptop1.01-01-1970_10-10-10Z\cmd\Laptop1.01-01-1970_10-10-10Z.system-info.txt` where the systems time zone is described. The timestamps in the other files are
+For timezone management please have a look at `win-collector-ng\Laptop1.01-01-1970_10-10-10Z\ps\Laptop1.01-01-1970_10-10-10Z.time-zone.csv` or `win-collector-ng\Laptop1.01-01-1970_10-10-10Z\cmd\Laptop1.01-01-1970_10-10-10Z.systeminfo.txt` where the systems time zone is described. The timestamps in the other files are
 in this timezone if not specifically described as UTC timestamps.
 
 # Data
@@ -61,6 +61,8 @@ The following data is collected:
   - ipconfig /displaydns
 - **Services**
   - Get-CimInstance
+- **Time Zone**
+  - Get-TimeZone
 - **Local Users**
   - Get-LocalUser
 - **Local Groups**

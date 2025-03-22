@@ -154,6 +154,12 @@ Get-CimInstance -Class Win32_Service | Select-Object Started, State, ProcessId, 
 
 # ----------------------------------------------------------------------------------------------------------
 
+# Time Zone
+$p = Get-FilePath -Path $currentPathPsDir -FileName "time-zone.csv"
+Get-TimeZone | Select-Object * | Export-Csv $p -NoTypeInformation
+
+# ----------------------------------------------------------------------------------------------------------
+
 # Local Users
 $p = Get-FilePath -Path $currentPathPsDir -FileName "local-users.csv"
 Get-LocalUser | Select-Object Enabled, SID, PrincipalSource, FullName, UserMayChangePassword, PasswordRequired, Name, LastLogon, PasswordChageableDate, PasswordExpires, PasswordLastSet, Description |
