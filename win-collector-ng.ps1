@@ -495,6 +495,8 @@ $regKeys = @(@{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
              @{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
                KeyName = "" },
              @{Path = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon"
+               KeyName = "" },
+             @{Path = "HKCU:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunOnce"
                KeyName = "" }
             # -------------------------------------------------------------    
              @{Path = "HKCU:\Environment"
@@ -508,9 +510,9 @@ $regKeys = @(@{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
                KeyName = "" },
              @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run"
                KeyName = "" },
-             @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunServices"
+             @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run\Services"
                KeyName = "" },
-             @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce"
+             @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run\Services\Once"
                KeyName = "" },
              @{Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders"
                KeyName = "" },
@@ -522,6 +524,8 @@ $regKeys = @(@{Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
                KeyName = "" },
              @{Path = "HKLM:\System\CurrentControlSet\Control\SecurityProviders\WDigest"
                KeyName = "" },
+             @{Path = "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Run"
+               KeyName = "" }
             # -------------------------------------------------------------
              @{Path = "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Windows"
                KeyName = "AppInit_DLLs" },
