@@ -417,7 +417,15 @@ foreach ($share in $shares){
 # Printers
 $p = Get-FilePath -Path $currentPathPsDir -FileName "printers.csv"
 Get-Printer | Select-Object Name, ComputerName, Type, DriverName, PortName, Shared, Published, DeviceType | Export-Csv $p -NoTypeInformation
+    
+# ----------------------------------------------------------------------------------------------------------
 
+# Prefetch Files (Requires Admin Privileges)
+$p = Get-FilePath -Path $currentPathPsDir -FileName "prefetch-files.csv"
+Get-ChildItem "C:\Windows\Prefetch\" -Force -Filter "*.pf" | Select-Object CreationTimeUtc,LastAccessTimeUtc,LastWriteTimeUtc,Length,FullName | 
+    Sort-Object -Property CreationTimeUtc -Descending | 
+    Export-Csv $p -NoTypeInformation
+   
 # ----------------------------------------------------------------------------------------------------------
 
 # Event Log: Available Log Files
