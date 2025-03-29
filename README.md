@@ -78,6 +78,10 @@ The following data is collected:
   - Get-Content
 - **Powershell History**
   - Get-ChildItem
+  - Get-Content
+- **Powershell Transcripts**
+  - Get-ChildItem
+  - Get-Content
 - **WMI**
   - Get-WMIObject
 - **Alternate Data Steams**

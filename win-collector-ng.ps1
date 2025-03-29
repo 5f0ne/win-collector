@@ -329,6 +329,36 @@ Get-ChildItem -Path $psHistoryPath -Force | ForEach-Object {
 
 # ----------------------------------------------------------------------------------------------------------
 
+# Powershell Transcripts
+# Finds all powershell transcripts files in powershell transcript standard path %USERPROFILE%\Documents
+# if the files are formatted like PowerShell_transcript*.txt
+
+$p = Get-FilePath -Path $currentPathPsDir -FileName "powershell-transcripts.csv"
+$defaultTranscriptPath = Join-Path $env:USERPROFILE "Documents"
+
+# Define transcript file pattern
+$transcriptPattern = "PowerShell_transcript*.txt"
+
+# Check if directory exists
+if (Test-Path $defaultTranscriptPath) {
+    # Search for transcript files
+    $transcriptFiles = Get-ChildItem -Path $defaultTranscriptPath -Filter $transcriptPattern -Force -Recurse -ErrorAction SilentlyContinue
+
+    if ($transcriptFiles) {
+        # Create overview csv
+        $transcriptFiles | Select-Object CreationTimeUtc,LastAccessTimeUtc,LastWriteTimeUtc,Length,FullName | Export-Csv $p -NoTypeInformation
+        # Create export folder and export the files
+        $f = $currentPathPsDir + "\powershell-transcripts"
+        New-OutputFolder -OutputPath $f
+        $transcriptFiles | ForEach-Object {
+            $p = Get-FilePath -Path $f -FileName $_.Name.Replace(" ","_")
+            Get-Content -LiteralPath $_.FullName | Out-File -FilePath $p
+        }
+    }
+}
+
+# ----------------------------------------------------------------------------------------------------------
+
 # WMI Event Filter and Consumer
 $p = Get-FilePath -Path $currentPathPsDir -FileName "wmi-event-filter.csv"
 Get-WMIObject -Namespace root\Subscription -Class __EventFilter | Select-Object __NAMESPACE, Name, EventNamespace, Query, QueryLanguage  | Export-Csv $p -NoTypeInformation
